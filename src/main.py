@@ -6,14 +6,14 @@ from mcp.server.fastmcp import FastMCP
 from dotenv import load_dotenv
 load_dotenv()
 
-mcp = FastMCP("protocolsio")
-PROTOCOLSIO_CLIENT_ACCESS_TOKEN = os.getenv("PROTOCOLSIO_CLIENT_ACCESS_TOKEN")
-PROTOCOLSIO_API_URL = os.getenv("PROTOCOLSIO_API_URL")
+mcp = FastMCP("protocols-io")
+PROTOCOLS_IO_CLIENT_ACCESS_TOKEN = os.getenv("PROTOCOLS_IO_CLIENT_ACCESS_TOKEN")
+PROTOCOLS_IO_API_URL = os.getenv("PROTOCOLS_IO_API_URL")
 
-async def get_protocolsio_resource(url: str) -> dict[str, Any] | None:
+async def get_protocols_io_resource(url: str) -> dict[str, Any] | None:
     """Fetch a resource from protocols.io API."""
     headers = {
-        "Authorization": f"Bearer {PROTOCOLSIO_CLIENT_ACCESS_TOKEN}"
+        "Authorization": f"Bearer {PROTOCOLS_IO_CLIENT_ACCESS_TOKEN}"
     }
     async with httpx.AsyncClient() as client:
         try:
@@ -27,8 +27,8 @@ async def get_protocolsio_resource(url: str) -> dict[str, Any] | None:
 @mcp.tool()
 async def get_profile() -> str:
     """Get user profile information from protocols.io."""
-    url = f"{PROTOCOLSIO_API_URL}/session/profile"
-    data = await get_protocolsio_resource(url)
+    url = f"{PROTOCOLS_IO_API_URL}/session/profile"
+    data = await get_protocols_io_resource(url)
     return json.dumps(data, indent=4)
 
 if __name__ == "__main__":
