@@ -1,7 +1,7 @@
 [project]
 name = "protocols-io-mcp-server"
 version = "0.1.0"
-description = "Add your description here"
+description = "An MCP server that enables MCP clients like Claude Desktop to interact with data from protocols.io."
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
