@@ -1,11 +1,22 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
 [project]
-name = "protocols-io-mcp-server"
+name = "protocols-io-mcp"
 version = "0.1.0"
 description = "An MCP server that enables MCP clients like Claude Desktop to interact with data from protocols.io."
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
+    "hatchling>=1.27.0",
     "httpx>=0.28.1",
     "mcp[cli]>=1.12.2",
     "python-dotenv>=1.1.1",
 ]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/protocols_io_mcp"]
+
+[project.scripts]
+protocols-io-mcp = "protocols_io_mcp.__main__:main"
