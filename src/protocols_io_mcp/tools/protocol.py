@@ -69,3 +69,12 @@ async def create_or_update_protocol_step(protocol_id: int | str, steps: list[Pro
     }
     response = await helpers.access_protocols_io_resource("POST", f"/v4/protocols/{protocol_id}/steps", data)
     return response
+
+@mcp.tool()
+async def delete_protocol_step(protocol_id: int | str, step_guids: list[str]) -> dict:
+    """Delete steps from a protocol on protocols.io."""
+    data = {
+        "steps": step_guids
+    }
+    response = await helpers.access_protocols_io_resource("DELETE", f"/v4/protocols/{protocol_id}/steps", data)
+    return response
