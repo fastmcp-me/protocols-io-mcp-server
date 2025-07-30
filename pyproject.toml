@@ -1,7 +1,3 @@
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
-
 [project]
 name = "protocols-io-mcp"
 version = "0.1.0"
@@ -15,8 +11,12 @@ dependencies = [
     "python-dotenv>=1.1.1",
 ]
 
-[tool.hatch.build.targets.wheel]
-packages = ["src/protocols_io_mcp"]
-
 [project.scripts]
 protocols-io-mcp = "protocols_io_mcp.__main__:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/protocols_io_mcp"]
