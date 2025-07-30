@@ -1,5 +1,5 @@
 import importlib
-from mcp.server.fastmcp import FastMCP
+from fastmcp import FastMCP
 
 mcp = FastMCP(
     name="protocols-io-mcp-server",

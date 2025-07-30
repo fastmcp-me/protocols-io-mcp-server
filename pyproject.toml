@@ -9,9 +9,9 @@ description = "An MCP server that enables MCP clients like Claude Desktop to int
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
+    "fastmcp>=2.10.6",
     "hatchling>=1.27.0",
     "httpx>=0.28.1",
-    "mcp[cli]>=1.12.2",
     "python-dotenv>=1.1.1",
 ]
 
