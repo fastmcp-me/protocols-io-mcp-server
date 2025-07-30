@@ -8,12 +8,12 @@ load_dotenv()
 PROTOCOLS_IO_CLIENT_ACCESS_TOKEN = os.getenv("PROTOCOLS_IO_CLIENT_ACCESS_TOKEN")
 PROTOCOLS_IO_API_URL = os.getenv("PROTOCOLS_IO_API_URL")
 
-async def access_protocols_io_resource(method: Literal["GET", "POST", "PUT"], path: str, data: dict = None) -> dict[str, Any]:
+async def access_protocols_io_resource(method: Literal["GET", "POST", "PUT", "DELETE"], path: str, data: dict = None) -> dict[str, Any]:
     """Access protocols.io API with specified method and path."""
     headers = {
         "Authorization": f"Bearer {PROTOCOLS_IO_CLIENT_ACCESS_TOKEN}"
     }
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(timeout=30.0) as client:
         try:
             response = await client.request(method, f"{PROTOCOLS_IO_API_URL}{path}", json=data, headers=headers)
             response.raise_for_status()
@@ -21,5 +21,5 @@ async def access_protocols_io_resource(method: Literal["GET", "POST", "PUT"], pa
         except (httpx.HTTPError, httpx.TimeoutException, json.JSONDecodeError) as e:
             return {
                 "error": True,
-                "message": f"Error accessing resource: {e}",
+                "message": f"Error accessing resource: <{type(e).__name__}> {e}",
             }
