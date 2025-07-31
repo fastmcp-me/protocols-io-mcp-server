@@ -1,3 +1,3 @@
-from protocols_io_mcp.tools import profile, protocol
+from protocols_io_mcp.tools import general, protocol
 
-__all__ = ["profile", "protocol"]
+__all__ = ["general", "protocol"]
