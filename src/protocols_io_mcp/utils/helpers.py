@@ -1,5 +1,4 @@
 import os
-import json
 import httpx
 from typing import Literal, Any
 from dotenv import load_dotenv
@@ -14,12 +13,5 @@ async def access_protocols_io_resource(method: Literal["GET", "POST", "PUT", "DE
         "Authorization": f"Bearer {PROTOCOLS_IO_CLIENT_ACCESS_TOKEN}"
     }
     async with httpx.AsyncClient(timeout=30.0) as client:
-        try:
-            response = await client.request(method, f"{PROTOCOLS_IO_API_URL}{path}", json=data, headers=headers)
-            response.raise_for_status()
-            return response.json()
-        except (httpx.HTTPError, httpx.TimeoutException, json.JSONDecodeError) as e:
-            return {
-                "error": True,
-                "message": f"Error accessing resource: <{type(e).__name__}> {e}",
-            }
+        response = await client.request(method, f"{PROTOCOLS_IO_API_URL}{path}", json=data, headers=headers)
+        return response.json()
