@@ -45,7 +45,6 @@ class Protocol(BaseModel):
     before_start: Annotated[str | None, Field(description="Text to be displayed before the start of the protocol, if the protocol does not have this text, this will be null")] = None
     warning: Annotated[str | None, Field(description="Warning text for the protocol, if the protocol does not have a warning, this will be null")] = None
     materials_text: Annotated[str | None, Field(description="Text describing the materials used in the protocol, if the protocol does not have this text, this will be null")] = None
-    steps: Annotated[list[ProtocolStep], Field(description="List of steps in the protocol, this will be empty if the protocol has no steps")]
     public: bool
     doi: Annotated[str | None, Field(description="DOI of the protocol, if the protocol is not published, this will be null")] = None
     url: str
@@ -59,10 +58,8 @@ class Protocol(BaseModel):
     async def from_api_response(cls, data: dict) -> "Protocol":
         response_additional = await helpers.access_protocols_io_resource("GET", f"/v4/protocols/{data['id']}")
         if response_additional["status_code"] != 0:
-            steps = []
             protocol_references = None
         else:
-            steps = [ProtocolStep.from_api_response(step) for step in response_additional["payload"].get("steps") or []]
             protocol_references = response_additional["payload"].get("protocol_references") or None
 
         return cls(
@@ -73,7 +70,6 @@ class Protocol(BaseModel):
             before_start=data.get("before_start") or None,
             warning=data.get("warning") or None,
             materials_text=data.get("materials_text") or None,
-            steps=steps,
             doi=data.get("doi") or None,
             public=data["public"],
             url=data["url"],
@@ -113,6 +109,15 @@ async def get_protocol(protocol_id: int) -> Protocol | ErrorResponse:
         return ErrorResponse.from_api_response(response["status_text"])
     protocol = await Protocol.from_api_response(response["payload"])
     return protocol
+
+@mcp.tool()
+async def get_protocol_steps(protocol_id: int) -> list[ProtocolStep] | ErrorResponse:
+    """Get the steps of the protocol with the specified ID from protocols.io."""
+    response = await helpers.access_protocols_io_resource("GET", f"/v4/protocols/{protocol_id}/steps")
+    if response["status_code"] != 0:
+        return ErrorResponse.from_api_response(response["status_text"])
+    steps = [ProtocolStep.from_api_response(step) for step in response.get("payload", [])]
+    return steps
 
 @mcp.tool()
 async def get_user_protocol_list() -> list[Protocol] | ErrorResponse:
