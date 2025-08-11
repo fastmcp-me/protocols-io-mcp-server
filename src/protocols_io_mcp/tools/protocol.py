@@ -90,7 +90,7 @@ class ErrorResponse(BaseModel):
         )
 
 @mcp.tool()
-async def create_protocol() -> Protocol | ErrorResponse:
+async def create_blank_protocol() -> Protocol | ErrorResponse:
     """Create a blank new protocol on protocols.io."""
     data = {
         "type_id": 1,
