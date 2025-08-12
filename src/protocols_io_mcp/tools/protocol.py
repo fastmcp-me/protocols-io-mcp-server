@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime, timezone
-from typing import Annotated, Literal
+from typing import Annotated
 from pydantic import BaseModel, Field
 from protocols_io_mcp.server import mcp
 import protocols_io_mcp.utils.helpers as helpers
