@@ -132,9 +132,9 @@ async def get_user_protocol_list() -> list[Protocol] | ErrorResponse:
     return protocols
 
 @mcp.tool()
-async def get_public_protocol_list_by_keyword(protocol_filter: Literal["public", "user_public", "user_private", "shared_with_user"], keyword: str, page_size: int = 10, page_id: int = 1) -> list[Protocol] | ErrorResponse:
-    """Get a list of public protocols on protocols.io by keyword."""
-    response = await helpers.access_protocols_io_resource("GET", f"/v3/protocols?filter={protocol_filter}&key={keyword}&page_size={page_size}&page_id={page_id}")
+async def get_public_protocol_list_by_keyword(keyword: str, page_id: int = 1) -> list[Protocol] | ErrorResponse:
+    """Get a list of public protocols on protocols.io by keyword. Returns 3 protocols per page. Use page_id parameter for pagination (1-indexed)."""
+    response = await helpers.access_protocols_io_resource("GET", f"/v3/protocols?filter=public&key={keyword}&page_size=3&page_id={page_id}")
     if response["status_code"] != 0:
         return ErrorResponse.from_api_response(response["error_message"])
     protocols = [await Protocol.from_api_response(protocol) for protocol in response.get("items", [])]
@@ -179,7 +179,7 @@ async def update_protocol(
     return protocol
 
 @mcp.tool()
-async def create_or_update_protocol_step(protocol_id: int, steps: list[ProtocolStep]) -> Protocol | ErrorResponse:
+async def create_or_update_protocol_step(protocol_id: int, steps: list[ProtocolStep]) -> list[ProtocolStep] | ErrorResponse:
     """Create or update the steps of a protocol on protocols.io, if the step already exists (identified by its ID), it will be updated, otherwise it will be created."""
     steps_data = []
     for step in steps:
@@ -198,11 +198,11 @@ async def create_or_update_protocol_step(protocol_id: int, steps: list[ProtocolS
     response = await helpers.access_protocols_io_resource("POST", f"/v4/protocols/{protocol_id}/steps", data)
     if response["status_code"] != 0:
         return ErrorResponse.from_api_response(response["status_text"])
-    protocol_response = await helpers.access_protocols_io_resource("GET", f"/v4/protocols/{protocol_id}")
-    if protocol_response["status_code"] != 0:
-        return ErrorResponse.from_api_response(protocol_response["status_text"])
-    protocol = await Protocol.from_api_response(protocol_response["payload"])
-    return protocol
+    response_steps = await helpers.access_protocols_io_resource("GET", f"/v4/protocols/{protocol_id}/steps")
+    if response_steps["status_code"] != 0:
+        return ErrorResponse.from_api_response(response_steps["status_text"])
+    updated_steps = [ProtocolStep.from_api_response(step) for step in response_steps.get("payload", [])]
+    return updated_steps
 
 @mcp.tool()
 async def delete_protocol_step(protocol_id: int, step_ids: list[str]) -> Protocol | ErrorResponse:
