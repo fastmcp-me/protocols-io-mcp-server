@@ -712,6 +712,7 @@ name = "protocols-io-mcp"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
+    { name = "click" },
     { name = "fastmcp" },
     { name = "hatchling" },
     { name = "httpx" },
@@ -727,6 +728,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
+    { name = "click", specifier = ">=8.2.1" },
     { name = "fastmcp", specifier = ">=2.11.1" },
     { name = "hatchling", specifier = ">=1.27.0" },
     { name = "httpx", specifier = ">=0.28.1" },
