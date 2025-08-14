@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 PROTOCOLS_IO_CLIENT_ACCESS_TOKEN = os.getenv("PROTOCOLS_IO_CLIENT_ACCESS_TOKEN")
-PROTOCOLS_IO_API_URL = os.getenv("PROTOCOLS_IO_API_URL")
+PROTOCOLS_IO_API_URL = "https://www.protocols.io/api"
 
 async def access_protocols_io_resource(method: Literal["GET", "POST", "PUT", "DELETE"], path: str, data: dict = None) -> dict[str, Any]:
     """Access protocols.io API with specified method and path."""
