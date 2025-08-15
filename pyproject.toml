@@ -9,7 +9,6 @@ dependencies = [
     "fastmcp>=2.11.1",
     "hatchling>=1.27.0",
     "httpx>=0.28.1",
-    "python-dotenv>=1.1.1",
 ]
 
 [project.scripts]
@@ -20,6 +19,7 @@ dev = [
     "pytest>=8.4.1",
     "pytest-asyncio>=1.1.0",
     "pytest-mock>=3.14.1",
+    "python-dotenv>=1.1.1",
 ]
 
 [build-system]
