@@ -29,4 +29,4 @@ jobs:
     - name: Run tests
       env:
         PROTOCOLS_IO_CLIENT_ACCESS_TOKEN: ${{ secrets.PROTOCOLS_IO_CLIENT_ACCESS_TOKEN }}
-      run: uv run pytest
+      run: uv run pytest -v
