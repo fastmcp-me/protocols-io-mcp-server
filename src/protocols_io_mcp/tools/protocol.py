@@ -198,21 +198,6 @@ async def get_protocol_steps(
     return steps
 
 @mcp.tool()
-async def delete_protocol_step(
-    protocol_id: Annotated[int, Field(description="Unique identifier for the protocol")],
-    step_id: Annotated[str, Field(description="Unique identifier for the step to be deleted")]
-) -> list[ProtocolStep] | ErrorMessage:
-    """Delete a specific step from a protocol."""
-    response_delete_protocol_step = await helpers.access_protocols_io_resource("DELETE", f"/v4/protocols/{protocol_id}/steps", {"steps": [step_id]})
-    if response_delete_protocol_step["status_code"] != 0:
-        return ErrorMessage.from_string(response_delete_protocol_step["status_text"])
-    response_get_protocol_steps = await helpers.access_protocols_io_resource("GET", f"/v4/protocols/{protocol_id}/steps?content_format=markdown")
-    if response_get_protocol_steps["status_code"] != 0:
-        return ErrorMessage.from_string(response_get_protocol_steps["status_text"])
-    steps = [ProtocolStep.from_api_response(step) for step in response_get_protocol_steps.get("payload", [])]
-    return steps
-
-@mcp.tool()
 async def create_protocol(
     title: Annotated[str, Field(description="Title of the new protocol")],
     description: Annotated[str, Field(description="Description of the new protocol")],
@@ -227,6 +212,38 @@ async def create_protocol(
     if response_update_protocol["status_code"] != 0:
         return ErrorMessage.from_string(response_update_protocol["status_text"])
     response_get_protocol = await helpers.access_protocols_io_resource("GET", f"/v4/protocols/{protocol.id}")
+    if response_get_protocol["status_code"] != 0:
+        return ErrorMessage.from_string(response_get_protocol["status_text"])
+    protocol = Protocol.from_api_response(response_get_protocol["payload"])
+    return protocol
+
+@mcp.tool()
+async def update_protocol_title(
+    protocol_id: Annotated[int, Field(description="Unique identifier for the protocol")],
+    title: Annotated[str, Field(description="New title for the protocol")]
+) -> Protocol | ErrorMessage:
+    """Update the title of an existing protocol."""
+    data = {"title": title}
+    response_update_protocol = await helpers.access_protocols_io_resource("PUT", f"/v4/protocols/{protocol_id}", data)
+    if response_update_protocol["status_code"] != 0:
+        return ErrorMessage.from_string(response_update_protocol["status_text"])
+    response_get_protocol = await helpers.access_protocols_io_resource("GET", f"/v4/protocols/{protocol_id}")
+    if response_get_protocol["status_code"] != 0:
+        return ErrorMessage.from_string(response_get_protocol["status_text"])
+    protocol = Protocol.from_api_response(response_get_protocol["payload"])
+    return protocol
+
+@mcp.tool()
+async def update_protocol_description(
+    protocol_id: Annotated[int, Field(description="Unique identifier for the protocol")],
+    description: Annotated[str, Field(description="New description for the protocol")]
+) -> Protocol | ErrorMessage:
+    """Update the description of an existing protocol."""
+    data = {"description": description}
+    response_update_protocol = await helpers.access_protocols_io_resource("PUT", f"/v4/protocols/{protocol_id}", data)
+    if response_update_protocol["status_code"] != 0:
+        return ErrorMessage.from_string(response_update_protocol["status_text"])
+    response_get_protocol = await helpers.access_protocols_io_resource("GET", f"/v4/protocols/{protocol_id}")
     if response_get_protocol["status_code"] != 0:
         return ErrorMessage.from_string(response_get_protocol["status_text"])
     protocol = Protocol.from_api_response(response_get_protocol["payload"])
@@ -300,3 +317,18 @@ async def add_protocol_step(
         return ErrorMessage.from_string(response_get_steps["status_text"])
     protocol_steps = [ProtocolStep.from_api_response(step) for step in response_get_steps.get("payload", [])]
     return protocol_steps
+
+@mcp.tool()
+async def delete_protocol_step(
+    protocol_id: Annotated[int, Field(description="Unique identifier for the protocol")],
+    step_id: Annotated[str, Field(description="Unique identifier for the step to be deleted")]
+) -> list[ProtocolStep] | ErrorMessage:
+    """Delete a specific step from a protocol."""
+    response_delete_protocol_step = await helpers.access_protocols_io_resource("DELETE", f"/v4/protocols/{protocol_id}/steps", {"steps": [step_id]})
+    if response_delete_protocol_step["status_code"] != 0:
+        return ErrorMessage.from_string(response_delete_protocol_step["status_text"])
+    response_get_protocol_steps = await helpers.access_protocols_io_resource("GET", f"/v4/protocols/{protocol_id}/steps?content_format=markdown")
+    if response_get_protocol_steps["status_code"] != 0:
+        return ErrorMessage.from_string(response_get_protocol_steps["status_text"])
+    steps = [ProtocolStep.from_api_response(step) for step in response_get_protocol_steps.get("payload", [])]
+    return steps
