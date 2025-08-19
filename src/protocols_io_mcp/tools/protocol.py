@@ -157,7 +157,14 @@ async def search_public_protocols(
     keyword: Annotated[str, Field(description="Keyword to search for protocols")],
     page: Annotated[int, Field(description="Page number for pagination, starting from 1")] = 1,
 ) -> ProtocolSearchResult | ErrorMessage:
-    """Search for public protocols on protocols.io using a keyword."""
+    """
+    Search for public protocols on protocols.io using a keyword. Results are sorted by protocol popularity and paginated with 3 protocols per page (use the page parameter to navigate, default is 1).
+
+    When searching for reference protocols to create a new protocol:
+    - Avoid referencing protocols from before 2015 as they may be outdated.
+    - If the found protocols have topics that are not closely related to your needs, ask the user for clearer direction before proceeding.
+    - If the found protocols are highly relevant, use get_protocol_steps to examine at least 2 protocols' detailed steps and integrate insights from different approaches to ensure more reliable protocol development.
+    """
     page = page - 1 # weird bug in protocols.io API where it returns page 2 if page 1 is requested
     response = await helpers.access_protocols_io_resource("GET", f"/v3/protocols?filter=public&key={keyword}&page_size=3&page_id={page}")
     if response["status_code"] != 0:
@@ -167,7 +174,9 @@ async def search_public_protocols(
 
 @mcp.tool()
 async def get_my_protocols() -> list[Protocol] | ErrorMessage:
-    """Retrieve all protocols owned by the current user."""
+    """
+    Retrieve basic information for all protocols belonging to the current user. To get detailed protocol steps, use get_protocol_steps.
+    """
     response_profile = await helpers.access_protocols_io_resource("GET", f"/v3/session/profile", {})
     if response_profile["status_code"] != 0:
         return ErrorMessage.from_string(response_profile["error_message"])
@@ -182,7 +191,9 @@ async def get_my_protocols() -> list[Protocol] | ErrorMessage:
 async def get_protocol(
     protocol_id: Annotated[int, Field(description="Unique identifier for the protocol")]
 ) -> Protocol | ErrorMessage:
-    """Retrieve a specific protocol by its ID."""
+    """
+    Retrieve basic information for a specific protocol by its protocol ID. To get detailed protocol steps, use get_protocol_steps.
+    """
     response = await helpers.access_protocols_io_resource("GET", f"/v4/protocols/{protocol_id}")
     if response["status_code"] != 0:
         return ErrorMessage.from_string(response["status_text"])
@@ -193,7 +204,9 @@ async def get_protocol(
 async def get_protocol_steps(
     protocol_id: Annotated[int, Field(description="Unique identifier for the protocol")]
 ) -> list[ProtocolStep] | ErrorMessage:
-    """Retrieve all steps of a specific protocol by its ID."""
+    """
+    Retrieve the steps for a specific protocol by its protocol ID.
+    """
     response = await helpers.access_protocols_io_resource("GET", f"/v4/protocols/{protocol_id}/steps?content_format=markdown")
     if response["status_code"] != 0:
         return ErrorMessage.from_string(response["status_text"])
@@ -205,7 +218,11 @@ async def create_protocol(
     title: Annotated[str, Field(description="Title of the new protocol")],
     description: Annotated[str, Field(description="Description of the new protocol")],
 ) -> Protocol | ErrorMessage:
-    """Create a new protocol with the given title and description."""
+    """
+    Create a new protocol with the given title and description.
+
+    Before creating a new protocol, ensure you have searched for at least 2 relevant public protocols using search_public_protocols and reviewed their detailed steps with get_protocol_steps for reference when adding steps.
+    """
     response_create_blank_protocol = await helpers.access_protocols_io_resource("POST", f"/v3/protocols/{uuid.uuid4().hex}", {"type_id": 1})
     if response_create_blank_protocol["status_code"] != 0:
         return ErrorMessage.from_string(response_create_blank_protocol["status_text"])
@@ -225,7 +242,9 @@ async def update_protocol_title(
     protocol_id: Annotated[int, Field(description="Unique identifier for the protocol")],
     title: Annotated[str, Field(description="New title for the protocol")]
 ) -> Protocol | ErrorMessage:
-    """Update the title of an existing protocol."""
+    """
+    Update the title of an existing protocol by its protocol ID.
+    """
     data = {"title": title}
     response_update_protocol = await helpers.access_protocols_io_resource("PUT", f"/v4/protocols/{protocol_id}", data)
     if response_update_protocol["status_code"] != 0:
@@ -241,7 +260,9 @@ async def update_protocol_description(
     protocol_id: Annotated[int, Field(description="Unique identifier for the protocol")],
     description: Annotated[str, Field(description="New description for the protocol")]
 ) -> Protocol | ErrorMessage:
-    """Update the description of an existing protocol."""
+    """
+    Update the description of an existing protocol by its protocol ID.
+    """
     data = {"description": description}
     response_update_protocol = await helpers.access_protocols_io_resource("PUT", f"/v4/protocols/{protocol_id}", data)
     if response_update_protocol["status_code"] != 0:
@@ -257,7 +278,9 @@ async def set_protocol_steps(
     protocol_id: Annotated[int, Field(description="Unique identifier for the protocol")],
     steps: Annotated[list[ProtocolStepInput], Field(description="List of steps to set for the protocol")]
 ) -> list[ProtocolStep] | ErrorMessage:
-    """Set the steps for a protocol."""
+    """
+    Replace the entire steps list of a specific protocol by its protocol ID with a new steps list. The existing steps will be completely overwritten.
+    """
     if not steps:
         return ErrorMessage.from_string("At least one step is required to set the protocol steps.")
     # get all existing steps
@@ -296,7 +319,9 @@ async def add_protocol_step(
     protocol_id: Annotated[int, Field(description="Unique identifier for the protocol")],
     step: Annotated[ProtocolStepInput, Field(description="Step to be added to the protocol")]
 ) -> list[ProtocolStep] | ErrorMessage:
-    """Add a new step to a protocol."""
+    """
+    Add a step to the end of the steps list for a specific protocol by its protocol ID.
+    """
     # get all existing steps
     response_get_steps = await helpers.access_protocols_io_resource("GET", f"/v4/protocols/{protocol_id}/steps?content_format=markdown")
     if response_get_steps["status_code"] != 0:
@@ -326,7 +351,9 @@ async def delete_protocol_step(
     protocol_id: Annotated[int, Field(description="Unique identifier for the protocol")],
     step_id: Annotated[str, Field(description="Unique identifier for the step to be deleted")]
 ) -> list[ProtocolStep] | ErrorMessage:
-    """Delete a specific step from a protocol."""
+    """
+    Delete a specific step from a protocol by providing both the protocol ID and step ID.
+    """
     response_delete_protocol_step = await helpers.access_protocols_io_resource("DELETE", f"/v4/protocols/{protocol_id}/steps", {"steps": [step_id]})
     if response_delete_protocol_step["status_code"] != 0:
         return ErrorMessage.from_string(response_delete_protocol_step["status_text"])
