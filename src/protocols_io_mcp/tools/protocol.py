@@ -48,7 +48,7 @@ class ProtocolStepInput(BaseModel):
                 response_get_protocol = await helpers.access_protocols_io_resource("GET", f"/v4/protocols/{protocol_id}")
                 if response_get_protocol["status_code"] != 0:
                     return response_get_protocol["status_text"]
-                protocol = Protocol.from_api_response(response_get_protocol["payload"])
+                protocol = await Protocol.from_protocol_id(response_get_protocol["payload"]["id"])
                 step_content += f"- {protocol.title}[{protocol.id}] {protocol.doi}\n"
         return step_content
 
@@ -118,15 +118,17 @@ class Protocol(BaseModel):
     published_on: Annotated[datetime | None, Field(description="Date and time the protocol was published, if the protocol is private, this will be null")] = None
 
     @classmethod
-    def from_api_response(cls, data: dict) -> "Protocol":
+    async def from_protocol_id(cls, protocol_id: int) -> "Protocol":
+        response = await helpers.access_protocols_io_resource("GET", f"/v4/protocols/{protocol_id}?content_format=markdown")
+        protocol = response["payload"]
         return cls(
-            id=data["id"],
-            title=data["title"],
-            description=data.get("description") or "",
-            doi=data.get("doi") or None,
-            url=data["url"],
-            created_on=datetime.fromtimestamp(data.get("created_on"), tz=timezone.utc),
-            published_on=datetime.fromtimestamp(data.get("published_on"), tz=timezone.utc) if data.get("published_on") else None,
+            id=protocol_id,
+            title=protocol["title"],
+            description=protocol.get("description") or "",
+            doi=protocol.get("doi") or None,
+            url=protocol.get("url"),
+            created_on=datetime.fromtimestamp(protocol.get("created_on"), tz=timezone.utc),
+            published_on=datetime.fromtimestamp(protocol.get("published_on"), tz=timezone.utc) if protocol.get("published_on") else None
         )
 
 class ProtocolSearchResult(BaseModel):
@@ -135,8 +137,8 @@ class ProtocolSearchResult(BaseModel):
     total_pages: Annotated[int, Field(description="Total number of pages available for the search results")]
 
     @classmethod
-    def from_api_response(cls, data: dict) -> "ProtocolSearchResult":
-        protocols = [Protocol.from_api_response(protocol) for protocol in data["items"]]
+    async def from_api_response(cls, data: dict) -> "ProtocolSearchResult":
+        protocols = [await Protocol.from_protocol_id(protocol["id"]) for protocol in data["items"]]
         return cls(
             protocols=protocols,
             current_page=data["pagination"]["current_page"],
@@ -156,10 +158,11 @@ async def search_public_protocols(
     page: Annotated[int, Field(description="Page number for pagination, starting from 1")] = 1,
 ) -> ProtocolSearchResult | ErrorMessage:
     """Search for public protocols on protocols.io using a keyword."""
+    page = page - 1 # weird bug in protocols.io API where it returns page 2 if page 1 is requested
     response = await helpers.access_protocols_io_resource("GET", f"/v3/protocols?filter=public&key={keyword}&page_size=3&page_id={page}")
     if response["status_code"] != 0:
         return ErrorMessage.from_string(response["error_message"])
-    search_result = ProtocolSearchResult.from_api_response(response)
+    search_result = await ProtocolSearchResult.from_api_response(response)
     return search_result
 
 @mcp.tool()
@@ -172,7 +175,7 @@ async def get_my_protocols() -> list[Protocol] | ErrorMessage:
     response = await helpers.access_protocols_io_resource("GET", f"/v3/researchers/{user.username}/protocols?filter=user_all")
     if response["status_code"] != 0:
         return ErrorMessage.from_api_response(response["error_message"])
-    protocols = [Protocol.from_api_response(protocol) for protocol in response.get("items")]
+    protocols = [await Protocol.from_protocol_id(protocol["id"]) for protocol in response.get("items")]
     return protocols
 
 @mcp.tool()
@@ -183,7 +186,7 @@ async def get_protocol(
     response = await helpers.access_protocols_io_resource("GET", f"/v4/protocols/{protocol_id}")
     if response["status_code"] != 0:
         return ErrorMessage.from_string(response["status_text"])
-    protocol = Protocol.from_api_response(response["payload"])
+    protocol = await Protocol.from_protocol_id(response["payload"]["id"])
     return protocol
 
 @mcp.tool()
@@ -206,7 +209,7 @@ async def create_protocol(
     response_create_blank_protocol = await helpers.access_protocols_io_resource("POST", f"/v3/protocols/{uuid.uuid4().hex}", {"type_id": 1})
     if response_create_blank_protocol["status_code"] != 0:
         return ErrorMessage.from_string(response_create_blank_protocol["status_text"])
-    protocol = Protocol.from_api_response(response_create_blank_protocol["protocol"])
+    protocol = await Protocol.from_protocol_id(response_create_blank_protocol["protocol"]["id"])
     data = {"title": title, "description": description}
     response_update_protocol = await helpers.access_protocols_io_resource("PUT", f"/v4/protocols/{protocol.id}", data)
     if response_update_protocol["status_code"] != 0:
@@ -214,7 +217,7 @@ async def create_protocol(
     response_get_protocol = await helpers.access_protocols_io_resource("GET", f"/v4/protocols/{protocol.id}")
     if response_get_protocol["status_code"] != 0:
         return ErrorMessage.from_string(response_get_protocol["status_text"])
-    protocol = Protocol.from_api_response(response_get_protocol["payload"])
+    protocol = await Protocol.from_protocol_id(response_get_protocol["payload"]["id"])
     return protocol
 
 @mcp.tool()
@@ -230,7 +233,7 @@ async def update_protocol_title(
     response_get_protocol = await helpers.access_protocols_io_resource("GET", f"/v4/protocols/{protocol_id}")
     if response_get_protocol["status_code"] != 0:
         return ErrorMessage.from_string(response_get_protocol["status_text"])
-    protocol = Protocol.from_api_response(response_get_protocol["payload"])
+    protocol = await Protocol.from_protocol_id(response_get_protocol["payload"]["id"])
     return protocol
 
 @mcp.tool()
@@ -246,7 +249,7 @@ async def update_protocol_description(
     response_get_protocol = await helpers.access_protocols_io_resource("GET", f"/v4/protocols/{protocol_id}")
     if response_get_protocol["status_code"] != 0:
         return ErrorMessage.from_string(response_get_protocol["status_text"])
-    protocol = Protocol.from_api_response(response_get_protocol["payload"])
+    protocol = await Protocol.from_protocol_id(response_get_protocol["payload"]["id"])
     return protocol
 
 @mcp.tool()
