@@ -13,6 +13,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
+      max-parallel: 1
       matrix:
         python-version: ["3.10", "3.11", "3.12", "3.13"]
     steps:
@@ -29,4 +30,4 @@ jobs:
     - name: Run tests
       env:
         PROTOCOLS_IO_CLIENT_ACCESS_TOKEN: ${{ secrets.PROTOCOLS_IO_CLIENT_ACCESS_TOKEN }}
-      run: uv run pytest -v
+      run: uv run pytest -vx
