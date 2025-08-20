@@ -1,6 +1,6 @@
 [project]
 name = "protocols-io-mcp"
-version = "1.0.0"
+version = "1.0.1"
 authors = [
     { name="Hao-Quan Liu", email="contact@haoquan.me" }
 ]
@@ -21,6 +21,7 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Operating System :: OS Independent",
 ]
 license = "MIT"
