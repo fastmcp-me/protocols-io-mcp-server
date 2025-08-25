@@ -37,7 +37,7 @@ class ProtocolStepInput(BaseModel):
         if len(step.materials) > 0:
             step_content += "[Materials]\n"
             for material in step.materials:
-                step_content += f"- {material.name.replace(' ', '')} {material.quantity} {material.unit.replace(' ', '')}\n"
+                step_content += f"- {material.name.replace(' ', '_')} {material.quantity} {material.unit.replace(' ', '_')}\n"
         # add reference protocols to step content
         if len(step.reference_protocol_ids) > 0:
             if len(step.materials) > 0:
@@ -49,7 +49,7 @@ class ProtocolStepInput(BaseModel):
                 if response_get_protocol["status_code"] != 0:
                     return response_get_protocol["status_text"]
                 protocol = await Protocol.from_protocol_id(response_get_protocol["payload"]["id"])
-                step_content += f"- {protocol.title}[{protocol.id}] {protocol.doi}\n"
+                step_content += f"- {protocol.title.replace('[', '<').replace(']', '>')}[{protocol.id}] {protocol.doi}\n"
         return step_content
 
 class ProtocolStep(BaseModel):
