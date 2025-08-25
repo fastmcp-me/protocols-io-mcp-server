@@ -225,7 +225,7 @@ async def create_protocol(
     """
     response_create_blank_protocol = await helpers.access_protocols_io_resource("POST", f"/v3/protocols/{uuid.uuid4().hex}", {"type_id": 1})
     if response_create_blank_protocol["status_code"] != 0:
-        return ErrorMessage.from_string(response_create_blank_protocol["status_text"])
+        return ErrorMessage.from_string(response_create_blank_protocol["error_message"])
     protocol = await Protocol.from_protocol_id(response_create_blank_protocol["protocol"]["id"])
     data = {"title": title, "description": description}
     response_update_protocol = await helpers.access_protocols_io_resource("PUT", f"/v4/protocols/{protocol.id}", data)
