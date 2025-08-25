@@ -24,7 +24,7 @@ class Material(BaseModel):
     unit: Annotated[str, Field(description="Unit of measurement for the material, e.g., 'mL', 'g', 'μL'")]
 
 class ProtocolStepInput(BaseModel):
-    description: Annotated[str, Field(description="Description of the step")]
+    description: Annotated[str, Field(description="Description of the step (plain text only)")]
     materials: Annotated[list[Material], Field(description="Materials required for this step. Empty if no materials are needed")] = Field(default_factory=list)
     reference_protocol_ids: Annotated[list[int], Field(description="Protocol IDs referenced by this step. Empty if no references exist. Strongly recommend using at least one reference to ensure credibility")] = Field(default_factory=list)
 
@@ -215,8 +215,8 @@ async def get_protocol_steps(
 
 @mcp.tool()
 async def create_protocol(
-    title: Annotated[str, Field(description="Title of the new protocol")],
-    description: Annotated[str, Field(description="Description of the new protocol")],
+    title: Annotated[str, Field(description="Title of the new protocol (plain text only)")],
+    description: Annotated[str, Field(description="Description of the new protocol (plain text only)")],
 ) -> Protocol | ErrorMessage:
     """
     Create a new protocol with the given title and description.
@@ -240,7 +240,7 @@ async def create_protocol(
 @mcp.tool()
 async def update_protocol_title(
     protocol_id: Annotated[int, Field(description="Unique identifier for the protocol")],
-    title: Annotated[str, Field(description="New title for the protocol")]
+    title: Annotated[str, Field(description="New title for the protocol (plain text only)")]
 ) -> Protocol | ErrorMessage:
     """
     Update the title of an existing protocol by its protocol ID.
@@ -258,7 +258,7 @@ async def update_protocol_title(
 @mcp.tool()
 async def update_protocol_description(
     protocol_id: Annotated[int, Field(description="Unique identifier for the protocol")],
-    description: Annotated[str, Field(description="New description for the protocol")]
+    description: Annotated[str, Field(description="New description for the protocol (plain text only)")]
 ) -> Protocol | ErrorMessage:
     """
     Update the description of an existing protocol by its protocol ID.
