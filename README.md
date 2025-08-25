@@ -102,6 +102,30 @@ To use this server with Claude Desktop, add the following configuration to your 
 }
 ```
 
+#### Troubleshooting
+
+##### MCP protocols-io: spawn protocols-io-mcp ENOENT
+
+This error indicates that Claude Desktop cannot find the `protocols-io-mcp` command. To resolve this:
+1. Make sure you have installed the `protocols-io-mcp` package globally using pip.
+2. Change the `command` field in your `claude_desktop_config.json` to the full path of the `protocols-io-mcp` executable. You can find the path by running:
+   ```bash
+   which protocols-io-mcp
+   ```
+3. Your final configuration should look like:
+   ```json
+   {
+     "mcpServers": {
+       "protocols-io": {
+         "command": "/full/path/to/protocols-io-mcp",
+         "env": {
+           "PROTOCOLS_IO_CLIENT_ACCESS_TOKEN": "your_client_access_token"
+         }
+       }
+     }
+   }
+   ```
+
 ## Development
 
 ### Running Tests
