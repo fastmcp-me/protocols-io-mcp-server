@@ -30,7 +30,13 @@ The server provides the following tools that can be used by MCP clients:
 
 ## Installation
 
-Install the package using pip:
+### Quick Start with Docker
+
+```bash
+docker run -d -p 8000:8000 -e PROTOCOLS_IO_CLIENT_ACCESS_TOKEN="your_access_token_here" --name protocols-io-mcp --restart always ghcr.io/hqn21/protocols-io-mcp:latest
+```
+
+### Install the package using pip
 
 ```bash
 pip install protocols-io-mcp
